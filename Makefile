@@ -1,8 +1,21 @@
 test:
 	pytest
 
+test-no-plotly:
+	uv sync --extra test
+	uv pip uninstall plotly
+	pytest tests/test_other.py -k plotly --pdb
+	uv sync --extra test
+	pytest tests/test_other.py -k plotly
+
 coverage:
 	pytest --cov
+
+format:
+	ruff format
+
+lint:
+	ruff check --fix
 
 install:
 	python -m pip install -e .
@@ -14,8 +27,7 @@ docs:
 	mkdocs serve
 
 pypi:
-	python setup.py sdist
-	python setup.py bdist_wheel --universal
+	python -m build
 	twine upload dist/*
 
 clean:

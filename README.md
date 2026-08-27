@@ -1,4 +1,5 @@
-[![PyPI - Python](https://img.shields.io/badge/python-v3.7+-blue.svg)](https://pypi.org/project/bertopic/)
+[![PyPI Downloads](https://static.pepy.tech/badge/bertopic)](https://pepy.tech/projects/bertopic)
+[![PyPI - Python](https://img.shields.io/badge/python-v3.10+-blue.svg)](https://pypi.org/project/bertopic/)
 [![Build](https://img.shields.io/github/actions/workflow/status/MaartenGr/BERTopic/testing.yml?branch=master)](https://github.com/MaartenGr/BERTopic/actions)
 [![docs](https://img.shields.io/badge/docs-Passing-green.svg)](https://maartengr.github.io/BERTopic/)
 [![PyPI - PyPi](https://img.shields.io/pypi/v/BERTopic)](https://pypi.org/project/bertopic/)
@@ -8,7 +9,7 @@
 
 # BERTopic
 
-<img src="images/logo.png" width="35%" height="35%" align="right" />
+<img src="images/logo.png" width="35%" align="right" /> 
 
 BERTopic is a topic modeling technique that leverages 🤗 transformers and c-TF-IDF to create dense clusters
 allowing for easily interpretable topics whilst keeping important words in the topic descriptions.
@@ -42,11 +43,20 @@ BERTopic supports all kinds of topic modeling techniques:
  </tr>
 </table>
 
-Corresponding medium posts can be found [here](https://towardsdatascience.com/topic-modeling-with-bert-779f7db187e6?source=friends_link&sk=0b5a470c006d1842ad4c8a3057063a99), [here](https://towardsdatascience.com/interactive-topic-modeling-with-bertopic-1ea55e7d73d8?sk=03c2168e9e74b6bda2a1f3ed953427e4) and [here](https://towardsdatascience.com/using-whisper-and-bertopic-to-model-kurzgesagts-videos-7d8a63139bdf?sk=b1e0fd46f70cb15e8422b4794a81161d). For a more detailed overview, you can read the [paper](https://arxiv.org/abs/2203.05794) or see a [brief overview](https://maartengr.github.io/BERTopic/algorithm/algorithm.html). 
+Corresponding medium posts can be found [here](https://medium.com/data-science/topic-modeling-with-bert-779f7db187e6?sk=0b5a470c006d1842ad4c8a3057063a99
+), [here](https://medium.com/data-science/using-whisper-and-bertopic-to-model-kurzgesagts-videos-7d8a63139bdf?sk=b1e0fd46f70cb15e8422b4794a81161d
+) and [here](https://medium.com/data-science/interactive-topic-modeling-with-bertopic-1ea55e7d73d8?sk=03c2168e9e74b6bda2a1f3ed953427e4
+). For a more detailed overview, you can read the [paper](https://arxiv.org/abs/2203.05794) or see a [brief overview](https://maartengr.github.io/BERTopic/algorithm/algorithm.html). 
 
 ## Installation
 
-Installation, with sentence-transformers, can be done using [pypi](https://pypi.org/project/bertopic/):
+Installation, with sentence-transformers, can be done using [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add bertopic
+```
+
+or with [pip](https://github.com/pypa/pip):
 
 ```bash
 pip install bertopic
@@ -61,6 +71,8 @@ pip install bertopic[flair,gensim,spacy,use]
 # Topic modeling with images
 pip install bertopic[vision]
 ```
+
+For a *light-weight installation* without transformers, UMAP and/or HDBSCAN (for training with Model2Vec or inference), see [this tutorial](https://maartengr.github.io/BERTopic/getting_started/tips_and_tricks/tips_and_tricks.html#lightweight-installation).
 
 ## Getting Started
 For an in-depth overview of the features of BERTopic 
@@ -161,7 +173,7 @@ from bertopic.representation import OpenAI
 
 # Fine-tune topic representations with GPT
 client = openai.OpenAI(api_key="sk-...")
-representation_model = OpenAI(client, model="gpt-3.5-turbo", chat=True)
+representation_model = OpenAI(client, model="gpt-4o-mini", chat=True)
 topic_model = BERTopic(representation_model=representation_model)
 ```
 
@@ -178,7 +190,7 @@ For example, we can visualize the topics that were generated in a way very simil
 topic_model.visualize_topics()
 ``` 
 
-<img src="images/topic_visualization.gif" width="60%" height="60%" align="center" />
+<img src="images/topic_visualization.gif" width="80%" align="center" />
 
 ## Modularity
 By default, the [main steps](https://maartengr.github.io/BERTopic/algorithm/algorithm.html) for topic modeling with BERTopic are sentence-transformers, UMAP, HDBSCAN, and c-TF-IDF run in sequence. However, it assumes some independence between these steps which makes BERTopic quite modular. In other words, BERTopic not only allows you to build your own topic model but to explore several topic modeling techniques on top of your customized topic model:

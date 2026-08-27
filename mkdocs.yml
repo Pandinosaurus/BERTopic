@@ -12,7 +12,7 @@ nav:
   - The Algorithm: algorithm/algorithm.md
   - Getting Started:
       - Quick Start: getting_started/quickstart/quickstart.md
-      - Serialization: getting_started/serialization/serialization.md       
+      - Serialization: getting_started/serialization/serialization.md
       - Search Topics: getting_started/search/search.md
       - Best Practices: getting_started/best_practices/best_practices.md
       - In-depth:
@@ -24,9 +24,9 @@ nav:
         - Update Topics:
           - Topic Reduction: getting_started/topicreduction/topicreduction.md
           - Update Topic Representations: getting_started/topicrepresentation/topicrepresentation.md
-          - Outlier reduction: getting_started/outlier_reduction/outlier_reduction.md       
-        - Parameter tuning: getting_started/parameter tuning/parametertuning.md       
-        - Tips & Tricks: getting_started/tips_and_tricks/tips_and_tricks.md       
+          - Outlier reduction: getting_started/outlier_reduction/outlier_reduction.md
+        - Parameter tuning: getting_started/parameter tuning/parametertuning.md
+        - Tips & Tricks: getting_started/tips_and_tricks/tips_and_tricks.md
       - Sub-models:
         - 1. Embeddings: getting_started/embeddings/embeddings.md
         - 2. Dimensionality Reduction: getting_started/dim_reduction/dim_reduction.md
@@ -57,29 +57,12 @@ nav:
   - API:
       - BERTopic: api/bertopic.md
       - Sub-models:
-        - Backends:
-          - Base: api/backends/base.md
-          - Word Doc: api/backends/word_doc.md
-          - OpenAI: api/backends/openai.md
-          - Cohere: api/backends/cohere.md
-        - Dimensionality Reduction:
-          - Base: api/dimensionality/base.md
-        - Clustering:
-          - Base: api/cluster/base.md
-        - Vectorizers:
-          - cTFIDF: api/ctfidf.md
-          - OnlineCountVectorizer: api/onlinecv.md
-        - Topic Representation:
-          - Base: api/representation/base.md
-          - MaximalMarginalRelevance: api/representation/mmr.md
-          - KeyBERT: api/representation/keybert.md
-          - PartOfSpeech: api/representation/pos.md
-          - Text Generation:
-            - 🤗 Transformers: api/representation/generation.md
-            - LangChain: api/representation/langchain.md
-            - Cohere: api/representation/cohere.md
-            - OpenAI: api/representation/openai.md
-          - Zero-shot Classification: api/representation/zeroshot.md
+        - 1. Backends: api/backends.md
+        - 2. Dimensionality Reduction: api/dimensionality.md
+        - 3. Clustering: api/cluster.md
+        - 4. Vectorizers: api/vectorizers.md
+        - 5. c-TF-IDF: api/ctfidf.md
+        - 6. Fine-Tune Topic Representation: api/representations.md
       - Plotting:
         - Barchart: api/plotting/barchart.md
         - Documents: api/plotting/documents.md
@@ -112,7 +95,7 @@ theme:
   favicon: icon.png
   logo: img/icon.png
   feature:
-    tabs: true  
+    tabs: true
   features:
     - navigation.tabs
     - navigation.sections

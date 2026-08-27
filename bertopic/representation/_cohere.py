@@ -4,7 +4,7 @@ from tqdm import tqdm
 from scipy.sparse import csr_matrix
 from typing import Mapping, List, Tuple, Union, Callable
 from bertopic.representation._base import BaseRepresentation
-from bertopic.representation._utils import truncate_document
+from bertopic.representation._utils import truncate_document, validate_truncate_document_parameters
 
 
 DEFAULT_PROMPT = """
@@ -35,9 +35,11 @@ Sample texts from this topic:
 Keywords: [KEYWORDS]
 Topic name:"""
 
+DEFAULT_SYSTEM_PROMPT = "You are an assistant that extracts high-level topics from texts."
+
 
 class Cohere(BaseRepresentation):
-    """ Use the Cohere API to generate topic labels based on their
+    """Use the Cohere API to generate topic labels based on their
     generative model.
 
     Find more about their models here:
@@ -51,26 +53,28 @@ class Cohere(BaseRepresentation):
                 NOTE: Use `"[KEYWORDS]"` and `"[DOCUMENTS]"` in the prompt
                 to decide where the keywords and documents need to be
                 inserted.
-        delay_in_seconds: The delay in seconds between consecutive prompts 
-                                in order to prevent RateLimitErrors. 
+        system_prompt: The system prompt to be used in the model. If no system prompt is given,
+                       `self.default_system_prompt_` is used instead.
+        delay_in_seconds: The delay in seconds between consecutive prompts
+                                in order to prevent RateLimitErrors.
         nr_docs: The number of documents to pass to OpenAI if a prompt
                  with the `["DOCUMENTS"]` tag is used.
         diversity: The diversity of documents to pass to OpenAI.
-                   Accepts values between 0 and 1. A higher 
+                   Accepts values between 0 and 1. A higher
                    values results in passing more diverse documents
                    whereas lower values passes more similar documents.
         doc_length: The maximum length of each document. If a document is longer,
                     it will be truncated. If None, the entire document is passed.
         tokenizer: The tokenizer used to calculate to split the document into segments
-                   used to count the length of a document. 
-                       * If tokenizer is 'char', then the document is split up 
+                   used to count the length of a document.
+                       * If tokenizer is 'char', then the document is split up
                          into characters which are counted to adhere to `doc_length`
                        * If tokenizer is 'whitespace', the document is split up
                          into words separated by whitespaces. These words are counted
                          and truncated depending on `doc_length`
                        * If tokenizer is 'vectorizer', then the internal CountVectorizer
                          is used to tokenize the document. These tokens are counted
-                         and trunctated depending on `doc_length`
+                         and truncated depending on `doc_length`
                        * If tokenizer is a callable, then that callable is used to tokenize
                          the document. These tokens are counted and truncated depending
                          on `doc_length`
@@ -103,34 +107,42 @@ class Cohere(BaseRepresentation):
     representation_model = Cohere(co, prompt=prompt)
     ```
     """
-    def __init__(self,
-                 client,
-                 model: str = "xlarge",
-                 prompt: str = None,
-                 delay_in_seconds: float = None,
-                 nr_docs: int = 4,
-                 diversity: float = None,
-                 doc_length: int = None,
-                 tokenizer: Union[str, Callable] = None
-                 ):
+
+    def __init__(
+        self,
+        client,
+        model: str = "command-r",
+        prompt: str | None = None,
+        system_prompt: str | None = None,
+        delay_in_seconds: float | None = None,
+        nr_docs: int = 4,
+        diversity: float | None = None,
+        doc_length: int | None = None,
+        tokenizer: Union[str, Callable] | None = None,
+    ):
         self.client = client
         self.model = model
         self.prompt = prompt if prompt is not None else DEFAULT_PROMPT
+        self.system_prompt = system_prompt if system_prompt is not None else DEFAULT_SYSTEM_PROMPT
         self.default_prompt_ = DEFAULT_PROMPT
+        self.default_system_prompt_ = DEFAULT_SYSTEM_PROMPT
         self.delay_in_seconds = delay_in_seconds
         self.nr_docs = nr_docs
         self.diversity = diversity
         self.doc_length = doc_length
         self.tokenizer = tokenizer
+        validate_truncate_document_parameters(self.tokenizer, self.doc_length)
+
         self.prompts_ = []
 
-    def extract_topics(self,
-                       topic_model,
-                       documents: pd.DataFrame,
-                       c_tf_idf: csr_matrix,
-                       topics: Mapping[str, List[Tuple[str, float]]]
-                       ) -> Mapping[str, List[Tuple[str, float]]]:
-        """ Extract topics
+    def extract_topics(
+        self,
+        topic_model,
+        documents: pd.DataFrame,
+        c_tf_idf: csr_matrix,
+        topics: Mapping[str, List[Tuple[str, float]]],
+    ) -> Mapping[str, List[Tuple[str, float]]]:
+        """Extract topics.
 
         Arguments:
             topic_model: Not used
@@ -142,7 +154,9 @@ class Cohere(BaseRepresentation):
             updated_topics: Updated topic representations
         """
         # Extract the top 4 representative documents per topic
-        repr_docs_mappings, _, _, _ = topic_model._extract_representative_docs(c_tf_idf, documents, topics, 500, self.nr_docs, self.diversity)
+        repr_docs_mappings, _, _, _ = topic_model._extract_representative_docs(
+            c_tf_idf, documents, topics, 500, self.nr_docs, self.diversity
+        )
 
         # Generate using Cohere's Language Model
         updated_topics = {}
@@ -155,18 +169,20 @@ class Cohere(BaseRepresentation):
             if self.delay_in_seconds:
                 time.sleep(self.delay_in_seconds)
 
-            request = self.client.generate(model=self.model,
-                                           prompt=prompt,
-                                           max_tokens=50,
-                                           num_generations=1,
-                                           stop_sequences=["\n"])
-            label = request.generations[0].text.strip()
+            request = self.client.chat(
+                model=self.model,
+                preamble=self.system_prompt,
+                message=prompt,
+                max_tokens=50,
+                stop_sequences=["\n"],
+            )
+            label = request.text.strip()
             updated_topics[topic] = [(label, 1)] + [("", 0) for _ in range(9)]
 
         return updated_topics
 
     def _create_prompt(self, docs, topic, topics):
-        keywords = list(zip(*topics[topic]))[0]
+        keywords = next(zip(*topics[topic]))
 
         # Use the Default Chat Prompt
         if self.prompt == DEFAULT_PROMPT:
